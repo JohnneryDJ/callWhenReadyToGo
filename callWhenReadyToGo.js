@@ -109,8 +109,8 @@ callWhenReadyToGo.prototype =
 		}
 
 		// Wrap our own function over XMLHttpRequest.open to keep track of open connecitons
-	    var oldFunction = XMLHttpRequest.prototype.open;
-	    var thisObj = this;
+		var oldFunction = XMLHttpRequest.prototype.open;
+		var thisObj = this;
 		XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
 			thisObj.activeRequests++;
 			this.addEventListener("readystatechange", function() {
