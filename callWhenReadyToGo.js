@@ -16,6 +16,9 @@ callWhenReadyToGo = function (callback)
 
 	this.callback = callback;
 
+	// Keep tracks of open XMLHttpRequests
+	this.activeRequests = 0;
+
 	this.startChecking();
 };
 
@@ -36,7 +39,7 @@ callWhenReadyToGo.prototype =
 
 		// If the page has fired onload, has set the ready state, 
 		// has fired ajax complete or doesnt have jquery and has a stable DOM, assume its done loading
-		if(this.onloadFired && this.readyStateSet && this.ajaxComplete && this.DCLFired)
+		if(this.onloadFired && this.readyStateSet && this.ajaxComplete && this.DCLFired && this.activeRequests === 0)
 		{
 			this.complete();
 		}
@@ -103,6 +106,19 @@ callWhenReadyToGo.prototype =
 			$( document ).ajaxStop(function() {
 				this.ajaxComplete = true;
 			}.bind(this));
+		}
+
+		// Wrap our own function over XMLHttpRequest.open to keep track of open connecitons
+	    var oldFunction = XMLHttpRequest.prototype.open;
+	    var thisObj = this;
+		XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+			thisObj.activeRequests++;
+			this.addEventListener("readystatechange", function() {
+				if(this.readyState == 4) {
+				 	thisObj.activeRequests--;
+				}
+			}, false);
+			oldFunction.call(this, method, url, async, user, pass);
 		}
 	},
 
